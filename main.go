@@ -12,12 +12,6 @@ import (
 	"gonum.org/v1/plot/vg/draw"
 )
 
-type Point struct {
-	x float64
-	y float64
-	z float64
-}
-
 func convertWGStoCart(points []Point) []Point {
 	newpoints := make([]Point, len(points))
 	for i, el := range points {
@@ -77,9 +71,8 @@ func Dist(a, b Point) float64 {
 }
 
 func main() {
-	points := []Point{Point{45.91043204152349, 50.50752024855144, 0}, Point{45.90929808523507, 50.50737081218062, 0}, Point{45.90721698424876, 50.50676072184594, 0},
-		Point{45.90506986198657, 50.5057890410317, 0}, Point{45.90767218680866, 50.50375778662693, 0}, Point{45.91184648100185, 50.50651414134762, 0}, Point{45.91043204152349, 50.50752024855144, 0}}
-
+	points := []Point{Point{45.91043204152349, 50.50752024855144}, Point{45.90929808523507, 50.50737081218062}, Point{45.90721698424876, 50.50676072184594},
+		Point{45.90506986198657, 50.5057890410317}, Point{45.90767218680866, 50.50375778662693}, Point{45.91184648100185, 50.50651414134762}, Point{45.91043204152349, 50.50752024855144}}
 	pts := PointtoXY(convertWGStoCart(points))
 	err := plt(pts)
 	if err != nil {
