@@ -6,35 +6,36 @@ import (
 	"math"
 	"os"
 
+	g "github.com/Nickolaygoloburdin/flightplanner/geom"
 	"github.com/davvo/mercator"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg/draw"
 )
 
-func convertWGStoCart(points []Point) []Point {
-	newpoints := make([]Point, len(points))
+func convertWGStoCart(points []g.DDDPoint) []g.DDDPoint {
+	newpoints := make([]g.DDDPoint, len(points))
 	for i, el := range points {
-		x, y := mercator.LatLonToMeters(el.x, el.y)
-		newpoints[i] = Point{x, y, el.z}
+		x, y := mercator.LatLonToMeters(el.X, el.Y)
+		newpoints[i] = g.DDDPoint{x, y, el.Z}
 
 	}
 	return newpoints
 }
-func convertCarttoWGS(points []Point) []Point {
-	newpoints := make([]Point, len(points))
+func convertCarttoWGS(points []g.DDDPoint) []g.DDDPoint {
+	newpoints := make([]g.DDDPoint, len(points))
 	for _, i := range points {
-		x, y := mercator.MetersToLatLon(i.x, i.y)
-		newpoints = append(newpoints, Point{x, y, i.z})
+		x, y := mercator.MetersToLatLon(i.X, i.Y)
+		newpoints = append(newpoints, g.DDDPoint{x, y, i.Z})
 
 	}
 	return newpoints
 }
-func PointtoXY(points []Point) plotter.XYs {
+func PointtoXY(points []g.Point) plotter.XYs {
 	pts := make(plotter.XYs, len(points))
 	for i := range pts {
-		pts[i].X = points[i].x
-		pts[i].Y = points[i].y
+		pts[i].X = points[i].X
+		pts[i].Y = points[i].Y
 	}
 	return pts
 }
@@ -66,15 +67,20 @@ func plt(pts plotter.XYs) error {
 	return nil
 }
 
-func Dist(a, b Point) float64 {
-	return math.Sqrt(math.Pow(b.x-a.x, 2) + math.Pow(b.y-a.y, 2))
+func Dist(a, b g.Point) float64 {
+	return math.Sqrt(math.Pow(b.X-a.X, 2) + math.Pow(b.Y-a.Y, 2))
 }
 
 func main() {
-	points := []Point{Point{45.91043204152349, 50.50752024855144}, Point{45.90929808523507, 50.50737081218062}, Point{45.90721698424876, 50.50676072184594},
-		Point{45.90506986198657, 50.5057890410317}, Point{45.90767218680866, 50.50375778662693}, Point{45.91184648100185, 50.50651414134762}, Point{45.91043204152349, 50.50752024855144}}
-	pts := PointtoXY(convertWGStoCart(points))
-	err := plt(pts)
+	//pts := PointtoXY(convertWGStoCart(points))
+	pts := []g.Point{g.Point{26.612903225806452, 47.132034632034646}, g.Point{70.76612903225806, 82.03463203463205}, g.Point{90.52419354838709, 36.580086580086586}, g.Point{62.096774193548384, 12.770562770562773}}
+	cv := g.NewCoverage(pts, 1)
+	cv.CreateBigLinesSlice()
+	eq := cv.CreateCoverageEquations()
+	ic := g.CreateInsideCoors(eq)
+	points := cv.PreparePointsSlice(ic, eq)
+
+	err := plt(PointtoXY(points))
 	if err != nil {
 		fmt.Sprintf(err.Error())
 	}
