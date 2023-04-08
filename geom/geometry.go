@@ -3,9 +3,11 @@ package geometry
 import (
 	"fmt"
 	"math"
+
+	geo "github.com/kellydunn/golang-geo"
 )
 
-const accuracy float64 = 0.000001
+const accuracy float64 = 0.00001
 
 type Point struct {
 	X float64
@@ -32,48 +34,15 @@ type Coverage struct {
 }
 
 func Round(a float64) float64 {
-	return math.Round(a*1000000) / 1000000
+	return math.Round(a*10) / 10
+}
+func RoundP(a Point) Point {
+	return Point{math.Round(a.X*100) / 100, math.Round(a.Y*100) / 100}
 }
 func AlmostEqual(a, b float64) (res bool) {
-	m := math.Abs(a) - math.Abs(b)
+	m := math.Abs(math.Abs(a) - math.Abs(b))
 	res = m < accuracy
 	return
-}
-func PointInBoundingBox(pt Point, bb BoundingBox) bool {
-	// Check if point is in bounding box
-
-	// Bottom Left is the smallest and x and y value
-	// Top Right is the largest x and y value
-	return (pt.X < bb.TopRight.X || AlmostEqual(pt.X, bb.TopRight.X)) && (pt.X > bb.BottomLeft.X || AlmostEqual(pt.X, bb.BottomLeft.X)) &&
-		(pt.Y < bb.TopRight.Y || AlmostEqual(pt.Y, bb.TopRight.Y)) && (pt.Y > bb.BottomLeft.Y || AlmostEqual(pt.Y, bb.BottomLeft.Y))
-
-}
-func GetBoundingBox(poly []Point) BoundingBox {
-
-	var maxX, maxY, minX, minY float64
-
-	for i := 0; i < len(poly); i++ {
-		side := poly[i]
-
-		if side.X > maxX || maxX == 0.0 {
-			maxX = side.X
-		}
-		if side.Y > maxY || maxY == 0.0 {
-			maxY = side.Y
-		}
-		if side.X < minX || minX == 0.0 {
-			minX = side.X
-		}
-		if side.Y < minY || minY == 0.0 {
-			minY = side.Y
-		}
-	}
-
-	return BoundingBox{
-		BottomLeft: Point{X: minX, Y: minY},
-		TopRight:   Point{X: maxX, Y: maxY},
-	}
-
 }
 
 func NewCoverage(cpoints []Point, coeff float64) *Coverage {
@@ -180,40 +149,47 @@ func IsSlopeInf(a, b Point) bool {
 func GetSlope(a, b Point) float64 {
 	return (b.Y - a.Y) / (b.X - a.X)
 }
-func IsInsidePolygon(polygon []Point, point Point) bool {
-	bb := GetBoundingBox(polygon) // Get the bounding box of the polygon in question
-
-	point.X = Round(point.X)
-	point.Y = Round(point.Y)
-
-	for _, el := range polygon {
-		el.X = Round(point.X)
-		el.Y = Round(point.Y)
+func Orientation(p, q, r Point) int {
+	val := (((q.Y - p.Y) *
+		(r.X - q.X)) -
+		((q.X - p.X) *
+			(r.Y - q.Y)))
+	if Round(val) == 0.0 {
+		return 0
 	}
-	// If point not in bounding box return false immediately
-	if !PointInBoundingBox(point, bb) {
-		return false
+	if val > 0.0 {
+		return 1 //Collinear
+	} else {
+		return 2 // Clock or counterclock
+	}
+}
+func OnSegment(p, q, r Point) bool {
+	if (q.X <= math.Max(p.X, r.X)) &&
+		(q.X >= math.Min(p.X, r.X)) &&
+		(q.Y <= math.Max(p.Y, r.Y)) &&
+		(q.Y >= math.Min(p.Y, r.Y)) {
+		return true
 	}
 
-	// If the point is in the bounding box then we need to check the polygon
-	nverts := len(polygon)
-	intersect := false
+	return false
+}
+func IsInsidePolygon(poly []Point, point Point) bool {
 
-	verts := polygon
-	j := 0
-
-	for i := 1; i < nverts; i++ {
-
-		if ((verts[i].Y >= point.Y) != (verts[j].Y >= point.Y)) &&
-			(point.X <= (verts[j].X-verts[i].X)*(point.Y-verts[i].Y)/(verts[j].Y-verts[i].Y)+verts[i].X) {
-			intersect = !intersect
+	var p geo.Polygon
+	l := len(poly)
+	for i, polpoint := range poly {
+		if AlmostEqual(Round(polpoint.X), Round(point.X)) && AlmostEqual(Round(polpoint.Y), Round(point.Y)) {
+			return true
+		}
+		if Orientation(poly[i], point, poly[(i+1)%l]) == 0 {
+			return OnSegment(RoundP(poly[i]), RoundP(point), RoundP(poly[(i+1)%l]))
 		}
 
-		j = i
-
+		p.Add(geo.NewPoint(Round(polpoint.X), Round(polpoint.Y)))
 	}
+	gpoint := geo.NewPoint(Round(point.X), Round(point.Y))
 
-	return intersect
+	return p.Contains(gpoint)
 }
 func (c *Coverage) CalcMaxLenghtNums() {
 	var maxLen float64 = 0
@@ -331,11 +307,10 @@ func CreateInsideCoors(eqslice []LineEquation) (insideCoors []Point) {
 }
 func (cov *Coverage) PreparePointsSlice(insideCoors []Point, eqslice []LineEquation) (finalTrajectory []Point) {
 	lastVisited := []int{-1, -1}
-	finalTrajectory = make([]Point, 4)
 	l := len(eqslice)
 	for _, line := range cov.bigLinesEquationSlice {
 		curPos := []int{}
-		tpoint := make([]Point, 2)
+		var tpoint []Point
 
 		for x := range eqslice {
 			IntersectionPoint, parallels := Intersection(line, eqslice[x])
@@ -349,7 +324,7 @@ func (cov *Coverage) PreparePointsSlice(insideCoors []Point, eqslice []LineEquat
 			}
 		}
 
-		if len(curPos) > 0 {
+		if len(curPos) == 0 {
 			break
 		} else if lastVisited[0] == -1 {
 			finalTrajectory = append(finalTrajectory, tpoint[0])

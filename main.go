@@ -73,7 +73,7 @@ func Dist(a, b g.Point) float64 {
 
 func main() {
 	//pts := PointtoXY(convertWGStoCart(points))
-	pts := []g.Point{g.Point{26.612903225806452, 47.132034632034646}, g.Point{70.76612903225806, 82.03463203463205}, g.Point{90.52419354838709, 36.580086580086586}, g.Point{62.096774193548384, 12.770562770562773}}
+	pts := []g.Point{g.Point{22.782258064516125, 29.54545454545455}, g.Point{47.983870967741936, 68.77705627705629}, g.Point{82.86290322580645, 50.10822510822511}, g.Point{65.52419354838709, 9.523809523809526}}
 	cv := g.NewCoverage(pts, 1)
 	cv.CreateBigLinesSlice()
 	eq := cv.CreateCoverageEquations()
