@@ -99,30 +99,7 @@ func Intersection(linea, lineb LineEquation) (p Point, parallels bool) {
 
 	p.X = (linea.b*lineb.c - lineb.b*linea.c) / (linea.a*lineb.b - lineb.a*linea.b)
 	p.Y = (lineb.a*linea.c - linea.a*lineb.c) / (linea.a*lineb.b - lineb.a*linea.b)
-	// if linea.a == 0 && lineb.b == 0 {
-	// 	p.X = lineb.c
-	// 	p.Y = linea.c
-	// } else if lineb.a == 0 && linea.b == 0 {
-	// 	p.X = linea.c
-	// 	p.Y = lineb.c
 
-	// } else if linea.a == 0 {
-	// 	p.Y = linea.c
-	// 	p.X = (-p.Y*lineb.b - lineb.c) / lineb.a
-
-	// } else if lineb.a == 0 {
-	// 	p.Y = lineb.c
-	// 	p.X = (-p.Y*linea.b - linea.c) / linea.a
-
-	// } else if linea.b == 0 {
-	// 	p.X = linea.c
-	// 	p.Y = (-p.X*linea.b - lineb.c) / lineb.a
-
-	// } else if lineb.b == 0 {
-	// 	p.X = lineb.c
-	// 	p.Y = (-p.X*lineb.b - linea.c) / linea.a
-
-	// } else {
 	// 	p.Y = (linea.a*lineb.c - lineb.a*linea.c) / (lineb.a*linea.b - linea.a*lineb.b)
 	// 	p.X = (-p.Y*linea.b - linea.c) / linea.a
 
@@ -137,12 +114,12 @@ func CalcSlopeAxByC(fpoint, spoint Point) (le LineEquation) {
 		le.slope = math.Inf(1)
 		le.a = 1
 		le.b = 0
-		le.c = -fpoint.X
+		le.c = -le.a*spoint.X - spoint.Y*le.b
 	} else {
 		le.slope = GetSlope(fpoint, spoint)
 		le.a = le.slope
 		le.b = -1.0
-		le.c = -le.a*spoint.X + spoint.Y
+		le.c = -le.a*spoint.X - spoint.Y*le.b
 	}
 	return
 }
@@ -276,9 +253,9 @@ func (cov *Coverage) CreateCoverageEquations() (eqslice []LineEquation) {
 			line := CalcSlopeAxByC(cov.points[k], cov.points[(k+1)%len(cov.points)])
 			farp := FarthestPoint(cov.points, line)
 			if farp.X > cov.points[k].X {
-				eqslice = append(eqslice, LineEquation{-1, 1, 0, point.X + cov.FLightCoeff})
+				eqslice = append(eqslice, LineEquation{-1, 1, 0, -point.X - cov.FLightCoeff})
 			} else {
-				eqslice = append(eqslice, LineEquation{-1, 1, 0, point.X - cov.FLightCoeff})
+				eqslice = append(eqslice, LineEquation{-1, 1, 0, -point.X + cov.FLightCoeff})
 			}
 		} else {
 			line := CalcSlopeAxByC(cov.points[k], cov.points[(k+1)%len(cov.points)])

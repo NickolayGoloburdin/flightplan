@@ -23,7 +23,7 @@ func convertWGStoCart(points []g.Point) []g.Point {
 	return newpoints
 }
 func convertCarttoWGS(points []g.Point) []g.Point {
-	newpoints := make([]g.Point, len(points))
+	var newpoints []g.Point
 	for _, i := range points {
 		x, y := mercator.MetersToLatLon(i.X, i.Y)
 		newpoints = append(newpoints, g.Point{x, y})
