@@ -96,34 +96,37 @@ func Intersection(linea, lineb LineEquation) (p Point, parallels bool) {
 		return
 	}
 	parallels = false
-	if linea.a == 0 && lineb.b == 0 {
-		p.X = lineb.c
-		p.Y = linea.c
-	} else if lineb.a == 0 && linea.b == 0 {
-		p.X = linea.c
-		p.Y = lineb.c
 
-	} else if linea.a == 0 {
-		p.Y = linea.c
-		p.X = (-p.Y*lineb.b - lineb.c) / lineb.a
+	p.X = (linea.b*lineb.c - lineb.b*linea.c) / (linea.a*lineb.b - lineb.a*linea.b)
+	p.Y = (lineb.a*linea.c - linea.a*lineb.c) / (linea.a*lineb.b - lineb.a*linea.b)
+	// if linea.a == 0 && lineb.b == 0 {
+	// 	p.X = lineb.c
+	// 	p.Y = linea.c
+	// } else if lineb.a == 0 && linea.b == 0 {
+	// 	p.X = linea.c
+	// 	p.Y = lineb.c
 
-	} else if lineb.a == 0 {
-		p.Y = lineb.c
-		p.X = (-p.Y*linea.b - linea.c) / linea.a
+	// } else if linea.a == 0 {
+	// 	p.Y = linea.c
+	// 	p.X = (-p.Y*lineb.b - lineb.c) / lineb.a
 
-	} else if linea.b == 0 {
-		p.X = linea.c
-		p.Y = (-p.X*linea.b - lineb.c) / lineb.a
+	// } else if lineb.a == 0 {
+	// 	p.Y = lineb.c
+	// 	p.X = (-p.Y*linea.b - linea.c) / linea.a
 
-	} else if lineb.b == 0 {
-		p.X = lineb.c
-		p.Y = (-p.X*lineb.b - linea.c) / linea.a
+	// } else if linea.b == 0 {
+	// 	p.X = linea.c
+	// 	p.Y = (-p.X*linea.b - lineb.c) / lineb.a
 
-	} else {
-		p.Y = (linea.a*lineb.c - lineb.a*linea.c) / (lineb.a*linea.b - linea.a*lineb.b)
-		p.X = (-p.Y*linea.b - linea.c) / linea.a
+	// } else if lineb.b == 0 {
+	// 	p.X = lineb.c
+	// 	p.Y = (-p.X*lineb.b - linea.c) / linea.a
 
-	}
+	// } else {
+	// 	p.Y = (linea.a*lineb.c - lineb.a*linea.c) / (lineb.a*linea.b - linea.a*lineb.b)
+	// 	p.X = (-p.Y*linea.b - linea.c) / linea.a
+
+	// }
 	return
 }
 func CalcC(point Point, le LineEquation) float64 {
@@ -324,7 +327,7 @@ func (cov *Coverage) PreparePointsSlice(insideCoors []Point, eqslice []LineEquat
 			}
 		}
 
-		if len(curPos) == 0 {
+		if len(curPos) < 2 {
 			break
 		} else if lastVisited[0] == -1 {
 			finalTrajectory = append(finalTrajectory, tpoint[0])

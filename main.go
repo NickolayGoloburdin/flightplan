@@ -13,20 +13,20 @@ import (
 	"gonum.org/v1/plot/vg/draw"
 )
 
-func convertWGStoCart(points []g.DDDPoint) []g.DDDPoint {
-	newpoints := make([]g.DDDPoint, len(points))
+func convertWGStoCart(points []g.Point) []g.Point {
+	newpoints := make([]g.Point, len(points))
 	for i, el := range points {
 		x, y := mercator.LatLonToMeters(el.X, el.Y)
-		newpoints[i] = g.DDDPoint{x, y, el.Z}
+		newpoints[i] = g.Point{x, y}
 
 	}
 	return newpoints
 }
-func convertCarttoWGS(points []g.DDDPoint) []g.DDDPoint {
-	newpoints := make([]g.DDDPoint, len(points))
+func convertCarttoWGS(points []g.Point) []g.Point {
+	newpoints := make([]g.Point, len(points))
 	for _, i := range points {
 		x, y := mercator.MetersToLatLon(i.X, i.Y)
-		newpoints = append(newpoints, g.DDDPoint{x, y, i.Z})
+		newpoints = append(newpoints, g.Point{x, y})
 
 	}
 	return newpoints
@@ -73,15 +73,19 @@ func Dist(a, b g.Point) float64 {
 
 func main() {
 	//pts := PointtoXY(convertWGStoCart(points))
-	pts := []g.Point{g.Point{22.782258064516125, 29.54545454545455}, g.Point{47.983870967741936, 68.77705627705629}, g.Point{82.86290322580645, 50.10822510822511}, g.Point{65.52419354838709, 9.523809523809526}}
-	cv := g.NewCoverage(pts, 1)
+	points := []g.Point{g.Point{39.11909179137994, 45.763133084558405}, g.Point{39.12513548767524, 45.7632710483264}, g.Point{39.125447468361614, 45.75795265224616}, g.Point{39.1221870569868, 45.75846919338599},
+		g.Point{39.12036648632977, 45.75908922423628}, g.Point{39.11973611839241, 45.75962453390596}, g.Point{39.119626628876716, 45.76015995663019}, g.Point{39.11975016674302, 45.761943564761964},
+		g.Point{39.119900557578234, 45.762676699792195}, g.Point{39.120091791379934, 45.763133084558405}}
+	pts := convertWGStoCart(points)
+	cv := g.NewCoverage(pts, 10)
 	cv.CreateBigLinesSlice()
 	eq := cv.CreateCoverageEquations()
 	ic := g.CreateInsideCoors(eq)
-	points := cv.PreparePointsSlice(ic, eq)
+	finpoints := cv.PreparePointsSlice(ic, eq)
 
-	err := plt(PointtoXY(points))
+	err := plt(PointtoXY((finpoints)))
 	if err != nil {
 		fmt.Sprintf(err.Error())
 	}
+	fmt.Printf("Points :", convertCarttoWGS(finpoints))
 }
