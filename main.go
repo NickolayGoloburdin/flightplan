@@ -73,19 +73,23 @@ func Dist(a, b g.Point) float64 {
 
 func main() {
 	//pts := PointtoXY(convertWGStoCart(points))
-	points := []g.Point{g.Point{39.11909179137994, 45.763133084558405}, g.Point{39.12513548767524, 45.7632710483264}, g.Point{39.125447468361614, 45.75795265224616}, g.Point{39.1221870569868, 45.75846919338599},
-		g.Point{39.12036648632977, 45.75908922423628}, g.Point{39.11973611839241, 45.75962453390596}, g.Point{39.119626628876716, 45.76015995663019}, g.Point{39.11975016674302, 45.761943564761964},
-		g.Point{39.119900557578234, 45.762676699792195}, g.Point{39.120091791379934, 45.763133084558405}}
+	points := []g.Point{g.Point{45.763133084558405, 39.11909179137994}, g.Point{45.7632710483264, 39.12513548767524}, g.Point{45.75795265224616, 39.125447468361614}, g.Point{45.75846919338599, 39.1221870569868},
+		g.Point{45.75908922423628, 39.12036648632977}, g.Point{45.75962453390596, 39.11973611839241}, g.Point{45.76015995663019, 39.119626628876716}, g.Point{45.761943564761964, 39.11975016674302},
+		g.Point{45.762676699792195, 39.119900557578234}, g.Point{45.763133084558405, 39.120091791379934}}
 	pts := convertWGStoCart(points)
-	cv := g.NewCoverage(pts, 10)
+	cv := g.NewCoverage(pts, 50)
 	cv.CreateBigLinesSlice()
 	eq := cv.CreateCoverageEquations()
 	ic := g.CreateInsideCoors(eq)
 	finpoints := cv.PreparePointsSlice(ic, eq)
 
-	err := plt(PointtoXY((finpoints)))
+	err := plt(PointtoXY((points)))
 	if err != nil {
 		fmt.Sprintf(err.Error())
 	}
-	fmt.Printf("Points :", convertCarttoWGS(finpoints))
+	finlatlon := convertCarttoWGS(finpoints)
+	for _, el := range finlatlon {
+		fmt.Print("[", el.Y, ",", el.X, "],")
+
+	}
 }

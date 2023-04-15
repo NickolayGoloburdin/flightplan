@@ -7,7 +7,7 @@ import (
 	geo "github.com/kellydunn/golang-geo"
 )
 
-const accuracy float64 = 0.00001
+const accuracy float64 = 0.001
 
 type Point struct {
 	X float64
@@ -174,7 +174,7 @@ func IsInsidePolygon(poly []Point, point Point) bool {
 func (c *Coverage) CalcMaxLenghtNums() {
 	var maxLen float64 = 0
 	lenght := len(c.points)
-	for k, _ := range c.points {
+	for k := range c.points {
 		if d := dist(c.points[k], c.points[(k+1)%lenght]); d > maxLen {
 			maxLen = d
 			c.bigsidePoints[0] = k
